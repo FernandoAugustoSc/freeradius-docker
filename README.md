@@ -1,46 +1,52 @@
 
 # FreeRADIUS Docker
 
-Infraestrutura de autenticação RADIUS com Docker Compose.
-
-
+Infraestrutura de autenticação FreeRadius e Postgres em ambiente Docker.
 
 ## Estrutura
 
 .
-├── docker-compose.yml
-├── .env
-├── freeradius
-│   ├── certs
-│   │   ├── server.crt
-│   │   └── server.key
-│   ├── clients.conf
-│   ├── entrypoint.sh
-│   ├── mods-available
-│   │   ├── sql
-│   │   └── sqlippool
-│   ├── radiusd.conf
-│   └── sites-enabled
-│       ├── default -> ../sites-available/default
-│       └── inner-tunnel -> ../sites-available/inner-tunnel
-├── init
-    ├── 01-schema.sql
-    └── 02-create-user.sh
+└── freeradius
+    ├── docker-compose.yml
+    ├── dockerfile.freeradius
+    ├── dockerfile.postgres
+    ├── entrypoint.sh
+    ├── freeradius
+    │   ├── certs
+    │   │   ├── server.crt
+    │   │   └── server.key
+    │   ├── clients.conf
+    │   ├── mods-available
+    │   │   ├── sql
+    │   │   └── sqlippool
+    │   ├── radiusd.conf
+    │   └── sites-enabled
+    │       └── default
+    ├── init
+    │   ├── 01-schema.sql
+    │   └── 02-create-user.sh
 
 
-## Variáveis de ambiente
+## Variáveis de ambiente {
 
-Crie um arquivo `.env` e preencha os dados como desejar:
-
-# Banco de dados
+#Banco de dados
 
 POSTGRES_USER_DEFAULT=
 POSTGRES_PASSWORD_DEFAULT=
 POSTGRES_DB=
 
-# FreeRADIUS
+#FreeRADIUS
 
 FRD_HOST_DB=
 FRD_USER=
 FRD_PASSWORD=
 FRD_NAME_DB=
+
+# }
+
+
+Lembre-se de criar o arquivo .env com as variáveis do seu projeto
+
+# Para iniciar o projeto, execute:
+
+docker compose up --build -d
