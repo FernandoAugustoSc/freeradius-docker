@@ -1,0 +1,17 @@
+FROM freeradius/freeradius-server:latest
+
+
+COPY ./entrypoint.sh /entrypoint.sh
+COPY . /etc/freeradius/
+
+RUN chmod -R a+r /etc/freeradius/ && \
+    chmod 640 /etc/freeradius/certs/* && \
+    chown root:freerad /etc/freeradius/certs/* && \
+    chown -R root:freerad /etc/freeradius/* && \
+    rm -f /etc/freeradius/mods-enabled/sql && \
+    ln -s /etc/freeradius/mods-available/sql /etc/freeradius/mods-enabled/sql
+
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["freeradius", "-X"]
