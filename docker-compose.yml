@@ -4,24 +4,24 @@ services:
     container_name: portainer
     restart: unless-stopped
     ports:
-      - "9443:9443"
-      - "9000:9000"
+      - "${PORTAINER_PORT:-9443}:9443"
+      - "${PORTAINER_PORT2:-9000}:9000"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - portainer_data:/var/lib/portainer/data
+      - portainer_data:/var/lib/portainer/
     networks:
       freeradius_network:
-        ipv4_address: 172.20.0.4
+        ipv4_address: ${PORTAINER_CT_ADDRESS}
 
   postgres:
-    image: postgres:latest
+    image: postgres:trixie
     build:
       context: .
       dockerfile: dockerfile.postgres
     container_name: postgres
     restart: unless-stopped
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
     environment:
       POSTGRES_USER: ${POSTGRES_USER_DEFAULT}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD_DEFAULT}
@@ -30,10 +30,10 @@ services:
       RADIUS_DB_PASSWORD: ${FRD_PASSWORD}
       RADIUS_DB_NAME: ${FRD_NAME_DB}
     volumes:
-      - postgres_data:/var/lib/postgresql
+      - postgres_data:/var/lib/postgresql/
     networks:
       freeradius_network:
-        ipv4_address: 172.20.0.3
+        ipv4_address: ${POSTGRES_CT_ADDRESS}
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d freeradius"]
       interval: 5s
@@ -41,7 +41,7 @@ services:
       retries: 5
 
   freeradius:
-    image: freeradius/freeradius-server:latest
+    image: freeradius/freeradius-server:latest-alpine
     build:
       context: .
       dockerfile: dockerfile.freeradius
@@ -63,20 +63,16 @@ services:
 
     networks:
       freeradius_network:
-        ipv4_address: 172.20.0.2
-
-    volumes:
-      - freeradius_logs:/var/log/freeradius
+        ipv4_address: ${FRD_CT_ADDRESS}
 
 volumes:
   portainer_data: 
   postgres_data:
-  freeradius_logs:
 
 networks:
   freeradius_network:
     driver: bridge
     ipam:
       config:
-        - subnet: 172.20.0.0/16
-          gateway: 172.20.0.1
+        - subnet: ${DCK_NETWORK}
+          gateway: ${DCK_GATEWAY}

@@ -47,6 +47,10 @@ FRD_NAME_DB=
 
 Lembre-se de criar o arquivo .env com as variáveis do seu projeto
 
-# Para iniciar o projeto, execute:
+# Iniciar projeto
 
 docker compose up --build -d
+
+# Network
+
+Caso deseje utilizar outra rede (exemplo: 192.168.0.1/24), lembre-se se atualizar as variáveis ambiente.
