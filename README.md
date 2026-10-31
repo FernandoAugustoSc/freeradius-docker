@@ -44,7 +44,7 @@ Copie as variáveis abaixo para um arquivo `.env` na raiz do projeto e preencha 
 | `POSTGRES_DB`                 | Nome do banco de dados                    | `freeradius`      |
 | `POSTGRES_CT_ADDRESS`         | IP fixo do container Postgres             | `172.20.0.3`      |
 | `POSTGRES_PORT`               | Porta exposta do Postgres                 | `5432`            |
-| **FreeRADIUS**                |||
+| **FreeRADIUS**                |                                           |                   |
 | `FRD_HOST_DB`                 | Host do banco (IP do Postgres)            | `172.20.0.3`      |
 | `FRD_USER`                    | Usuário do banco para o FreeRADIUS        | `frd_user`        |
 | `FRD_PASSWORD`                | Senha do usuário FreeRADIUS               | `frd_senha`       |
