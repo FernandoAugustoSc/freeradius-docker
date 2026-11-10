@@ -4,6 +4,8 @@ FROM freeradius/freeradius-server:latest
 COPY ./entrypoint.sh /entrypoint.sh
 COPY ./freeradius/ /etc/freeradius/
 
+RUN openssl req -x509 -newkey rsa:2048 -keyout server.key -out server.crt     -days 365 -nodes -subj "/CN=radius.local" -out /etc/freeradius/certs/server.crt 
+
 RUN rm -f /etc/freeradius/mods-enabled/sql && \
     ln -sf /etc/freeradius/mods-available/sql /etc/freeradius/mods-enabled/sql &&\
     chmod -R a+r /etc/freeradius/ && \
@@ -13,4 +15,3 @@ RUN rm -f /etc/freeradius/mods-enabled/sql && \
 RUN chmod +x /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
-CMD ["freeradius", "-X"]

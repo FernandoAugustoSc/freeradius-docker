@@ -13,7 +13,7 @@ services:
         ipv4_address: ${PORTAINER_CT_ADDRESS}
 
   postgres:
-    image: postgres:trixie
+    image: postgres:alpine3.24
     build:
       context: .
       dockerfile: dockerfile.postgres
@@ -40,7 +40,7 @@ services:
       retries: 5
 
   freeradius:
-    image: freeradius/freeradius-server:latest-alpine
+    image: freeradius/freeradius-server:latest
     build:
       context: .
       dockerfile: dockerfile.freeradius
@@ -63,12 +63,9 @@ services:
     networks:
       freeradius_network:
         ipv4_address: ${FRD_CT_ADDRESS}
-    volumes:
-      - freeradius_data:/var/log/freeradius/
 
 volumes:
   postgres_data:
-  freeradius_data:
 
 networks:
   freeradius_network:

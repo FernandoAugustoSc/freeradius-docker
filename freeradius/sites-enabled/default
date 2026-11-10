@@ -318,7 +318,7 @@ authorize {
         #
         #  This policy will fix it to just be "password".
         #
-#       filter_password
+        filter_password
 
         #
         #  The preprocess module takes care of sanitizing some bizarre
@@ -665,9 +665,9 @@ preacct {
         #  The start time is: NOW - delay - session_length
         #
 
-#       update request {
-#               &FreeRADIUS-Acct-Session-Start-Time = "%{expr: %l - %{%{Acct-Session-Time}:-0} - %{%{Acct-Delay-Time}:-0}}"
-#       }
+       update request {
+               &FreeRADIUS-Acct-Session-Start-Time = "%{expr: %l - %{%{Acct-Session-Time}:-0} - %{%{Acct-Delay-Time}:-0}}"
+       }
 
 
         #
