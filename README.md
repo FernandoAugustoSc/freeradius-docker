@@ -58,8 +58,8 @@ Copie as variáveis abaixo para um arquivo `.env` na raiz do projeto e preencha 
 ## Como subir
 
 ```bash
-# 1. Crie o .env com suas variáveis
-cp .env.example .env   # (se existir) ou crie manualmente
+# 1. Crie o arquivo .env com suas variáveis
+nano .env   # (se existir) ou crie manualmente
 
 # 2. Suba a stack
 docker compose up --build -d   
