@@ -11,20 +11,17 @@ orquestrada via Docker Compose e gerenciada pelo Portainer.
 ├── dockerfile.postgres
 ├── entrypoint.sh
 ├── .env
-├── freeradius/
-│ ├── certs/
-│ │ ├── server.crt
-│ │ └── server.key
-│ ├── clients.conf
-│ ├── mods-available/
-│ │ ├── sql
-│ │ └── sqlippool
-│ ├── radiusd.conf
-│ └── sites-enabled/
-│ └── default
-├── init/
-│ ├── 01-schema.sql
-│ └── 02-create-user.sh
+├── freeradius
+│   ├── clients.conf
+│   ├── mods-available
+│   │   ├── sql
+│   │   └── sqlippool
+│   ├── radiusd.conf
+│   └── sites-enabled
+│       └── default
+├── init
+│   ├── 01-schema.sql
+│   └── 02-create-user.sh
 └── README.md
 
 
