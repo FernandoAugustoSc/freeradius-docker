@@ -11,6 +11,8 @@ services:
     networks:
       freeradius_network:
         ipv4_address: ${PORTAINER_CT_ADDRESS}
+    environment:
+      TZ: ${TZ}
 
   postgres:
     image: postgres:alpine3.24
@@ -28,8 +30,7 @@ services:
       RADIUS_DB_USER: ${FRD_USER}
       RADIUS_DB_PASSWORD: ${FRD_PASSWORD}
       RADIUS_DB_NAME: ${FRD_NAME_DB}
-    volumes:
-      - postgres_data:/var/lib/postgresql/
+      TZ: ${TZ}
     networks:
       freeradius_network:
         ipv4_address: ${POSTGRES_CT_ADDRESS}
@@ -37,8 +38,7 @@ services:
       test: ["CMD-SHELL", "pg_isready -U postgres -d freeradius"]
       interval: 5s
       timeout: 5s
-      retries: 5
-
+      retries: 3
   freeradius:
     image: freeradius/freeradius-server:latest
     build:
@@ -50,22 +50,18 @@ services:
       - "1812:1812/udp"
       - "1813:1813/udp"
     environment:
+      TZ: ${TZ}
       DB_HOST: ${FRD_HOST_DB}
       DB_USER: ${FRD_USER}
       DB_PASSWORD: ${FRD_PASSWORD}
       DB_NAME: ${FRD_NAME_DB}
       DB_PORT: ${FRD_PORT_DB}
-
     depends_on:
       postgres:
         condition: service_healthy
-
     networks:
       freeradius_network:
         ipv4_address: ${FRD_CT_ADDRESS}
-
-volumes:
-  postgres_data:
 
 networks:
   freeradius_network:
