@@ -20,9 +20,9 @@ services:
         ipv4_address: ${POSTGRES_ADDRESS}
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d ${DATABASE}"]
-      interval: 10s
-      timeout: 10s
-      retries: 5
+      interval: 3s
+      timeout: 15s
+      retries: 3
   freeradius:
     image: freeradius/freeradius-server:latest
     build:
@@ -46,6 +46,11 @@ services:
     networks:
       freeradius_network:
         ipv4_address: ${FREERADIUS_ADDRESS}
+    healthcheck:
+      test: ["CMD-SHELL", "freeradius -C"]
+      interval: 3s
+      timeout: 15s
+      retries: 3
 
   portainer:
     image: portainer/portainer-ee:latest
@@ -60,7 +65,8 @@ services:
       freeradius_network:
         ipv4_address: ${PORTAINER_ADDRESS}
     depends_on:
-      - freeradius
+      freeradius:
+        condition: service_healthy
 
 networks:
   freeradius_network:
