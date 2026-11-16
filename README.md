@@ -14,8 +14,8 @@ orquestrada via Docker e com gerenciamento web feito atraves do Portainer-EE.
 - `freeradius/mods-available/sql`: configura o módulo SQL do FreeRADIUS para conectar ao PostgreSQL e consultar as tabelas RADIUS.
 - `freeradius/radiusd.conf`: contém as configurações gerais do servidor FreeRADIUS.
 - `freeradius/sites-enabled/default`: define o servidor virtual padrão e os fluxos de autenticação e contabilização das requisições.
-- `init/01-create-database.sh`: cria o banco de dados, aplica o esquema e cria o usuário do FreeRADIUS com as permissões necessárias.
-- `init/schema.sql`: define as tabelas e os índices usados pelo FreeRADIUS para autenticação e contabilização .
+- `postgres/01-create-database.sh`: cria o banco de dados, aplica o esquema e cria o usuário do FreeRADIUS com as permissões necessárias.
+- `postgres/schema.sql`: define as tabelas e os índices usados pelo FreeRADIUS para autenticação e contabilização .
 
 ## Estrutura do projeto
 
@@ -33,7 +33,7 @@ orquestrada via Docker e com gerenciamento web feito atraves do Portainer-EE.
 │   ├── radiusd.conf
 │   └── sites-enabled
 │       └── default
-├── init
+├── postgres
 │   ├── 01-create-database.sh
 │   └── schema.sql
 └── README.md
