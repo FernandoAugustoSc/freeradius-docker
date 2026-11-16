@@ -9,9 +9,6 @@ sed -i \
     -e "s/FRD_DB_PORT/${DB_PORT}/g" \
     /etc/freeradius/mods-available/sql
 
-freeradius -f -l /var/log/freeradius/authentications.log
-
-# Mantém o container vivo e expõe os logs via stdout
-exec tail -f /var/log/freeradius/authentications.log
+exec freeradius -f -l /dev/stdout
 
 
