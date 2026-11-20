@@ -3,7 +3,13 @@ FROM freeradius/freeradius-server:latest
 COPY ./entrypoint.freeradius.sh /entrypoint.freeradius.sh
 COPY ./freeradius/ /etc/freeradius/
 
-RUN openssl req -x509 -newkey rsa:2048 -keyout server.key -out server.crt     -days 365 -nodes -subj "/CN=radius.local" -out /etc/freeradius/certs/server.crt 
+RUN mkdir -p /etc/freeradius/certs \
+    && openssl req -x509 -newkey rsa:2048 \
+       -keyout /etc/freeradius/certs/server.key \
+       -out /etc/freeradius/certs/server.crt \
+       -days 365 -nodes \
+       -subj "/CN=radius.local" \
+    && chmod 600 /etc/freeradius/certs/server.key
 
 RUN rm -f /etc/freeradius/mods-enabled/sql && \
     ln -sf /etc/freeradius/mods-available/sql /etc/freeradius/mods-enabled/sql &&\
