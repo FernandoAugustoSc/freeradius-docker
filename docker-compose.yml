@@ -90,10 +90,14 @@ services:
     depends_on:
       zabbix-server:
         condition: service_healthy
+      postgres:
+        condition: service_healthy
   zabbix-agent:
     image: zabbix/zabbix-agent:alpine-8.0-latest
     container_name: zabbix-agent
     restart: unless-stopped
+    group_add:
+      - 4
     environment:
       ZBX_SERVER_HOST: ${ZABBIX_SERVER_ADDRESS}
       ZBX_HOSTNAME: zabbix-agent
@@ -103,6 +107,25 @@ services:
     depends_on:
       zabbix-server:
         condition: service_healthy
+      postgres:
+        condition: service_healthy
+    volumes:
+    - /:/hostfs:ro                              
+    - /var/run/docker.sock:/var/run/docker.sock 
+  grafana:
+    image: grafana/grafana-oss:latest
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      GF_INSTALL_PLUGINS: alexanderzobnin-zabbix-app
+    networks:
+      freeradius_network:
+        ipv4_address: ${GRAFANA_ADDRESS}
+    depends_on:
+      zabbix-server:
+        condition: service_healthy  
 
   portainer:
     image: portainer/portainer-ee:latest
