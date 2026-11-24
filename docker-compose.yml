@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgres:alpine3.24
+    image: postgres:18
     build:
       context: .
       dockerfile: dockerfile.postgres
@@ -51,6 +51,81 @@ services:
       interval: 3s
       timeout: 15s
       retries: 3
+  zabbix-server:
+    image: zabbix/zabbix-server-pgsql:alpine-8.0-latest
+    container_name: zabbix-server
+    restart: unless-stopped
+    environment:
+      DB_SERVER_HOST: ${POSTGRES_ADDRESS}
+      POSTGRES_USER: ${POSTGRES_USER_DEFAULT}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD_DEFAULT}
+      ZBX_SERVER_HOST: ${ZABBIX_SERVER_ADDRESS}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      freeradius_network:
+        ipv4_address: ${ZABBIX_SERVER_ADDRESS}
+    healthcheck:
+      test: ["CMD-SHELL", "zabbix_server -V"]
+      interval: 10s
+      timeout: 60s
+      retries: 3
+      start_period: 30s
+  zabbix-web:
+    image: zabbix/zabbix-web-nginx-pgsql:alpine-8.0-latest
+    container_name: zabbix-web
+    restart: unless-stopped
+    ports:
+      - "${ZABBIX_WEB_PORT:-8080}:8080"
+    environment:
+      DB_SERVER_HOST: ${POSTGRES_ADDRESS}
+      POSTGRES_USER: ${POSTGRES_USER_DEFAULT}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD_DEFAULT}
+      ZBX_SERVER_HOST: ${ZABBIX_SERVER_ADDRESS}
+      PHP_TZ: ${TZ}
+    networks:
+      freeradius_network:
+        ipv4_address: ${ZABBIX_WEB_ADDRESS}
+    depends_on:
+      zabbix-server:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+  zabbix-agent:
+    image: zabbix/zabbix-agent:alpine-8.0-latest
+    container_name: zabbix-agent
+    restart: unless-stopped
+    group_add:
+      - 4
+    environment:
+      ZBX_SERVER_HOST: ${ZABBIX_SERVER_ADDRESS}
+      ZBX_HOSTNAME: zabbix-agent
+    networks:
+      freeradius_network:
+        ipv4_address: ${ZABBIX_AGENT_ADDRESS}
+    depends_on:
+      zabbix-server:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    volumes:
+    - /:/hostfs:ro                              
+    - /var/run/docker.sock:/var/run/docker.sock 
+  grafana:
+    image: grafana/grafana-oss:latest
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      GF_INSTALL_PLUGINS: alexanderzobnin-zabbix-app
+    networks:
+      freeradius_network:
+        ipv4_address: ${GRAFANA_ADDRESS}
+    depends_on:
+      zabbix-server:
+        condition: service_healthy  
 
   portainer:
     image: portainer/portainer-ee:latest

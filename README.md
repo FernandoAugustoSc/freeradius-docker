@@ -1,10 +1,36 @@
-# FreeRADIUS + PostgreSQL — Docker
+# FreeRADIUS, PostgreSQL e Monitoramento — Docker
 
-Infraestrutura de autenticação FreeRADIUS com banco de dados PostgreSQL,
-orquestrada via Docker e com gerenciamento web feito atraves do Portainer-EE.
+## Visão geral
 
+Este projeto fornece uma infraestrutura de autenticação e contabilização baseada em
+RADIUS, executada integralmente em containers Docker. O componente principal é o
+FreeRADIUS, responsável por receber solicitações de autenticação e contabilização
+dos equipamentos de rede, verificar as credenciais e políticas armazenadas no
+PostgreSQL e registrar informações sobre sessões dos usuários.
 
-## Descrição dos arquivos do Projeto
+A solução foi criada para estudos e ambientes de laboratório. Além dos serviços
+essenciais de RADIUS e banco de dados, o ambiente também inclui Zabbix e Grafana
+para coleta e visualização de dados de monitoramento, e Portainer para administração
+gráfica dos containers.
+
+## Arquitetura
+
+- **FreeRADIUS:** serviço de autenticação RADIUS que usa o protocolo PostgreSQL para
+  consultar usuários, grupos, permissões e registros de sessão.
+- **PostgreSQL:** banco central usado pelo FreeRADIUS. Na inicialização, a imagem
+  cria o banco configurado, aplica o esquema RADIUS e cria um usuário com permissões
+  limitadas às tabelas utilizadas pelo servidor.
+- **Zabbix Server:** recebe dados de monitoramento dos agentes e comunica-se com o
+  PostgreSQL para armazená-los.
+- **Zabbix Web:** interface web do Zabbix publicada na porta configurada por
+  `ZABBIX_WEB_PORT`.
+- **Zabbix Agent:** coleta métricas e informações do host onde opera.
+- **Grafana:** interface para criação de painéis e visualização dos dados fornecidos
+  pelo Zabbix.
+- **Portainer:** interface web para gerenciar containers, imagens, volumes e redes
+  Docker.
+
+## Descrição dos arquivos do projeto
 
 - `docker-compose.yml`: define e orquestra os containers do FreeRADIUS, PostgreSQL e Portainer, incluindo portas, rede, variáveis de ambiente e verificações de saúde.
 - `dockerfile.freeradius`: cria a imagem do FreeRADIUS, copia as configurações, script de inicialização, prepara o módulo SQL e os certificados.
@@ -41,41 +67,66 @@ orquestrada via Docker e com gerenciamento web feito atraves do Portainer-EE.
 
 ## Variáveis de ambiente
 
-Copie as variáveis abaixo para um arquivo `.env` na raiz do projeto e preencha com os valores adequados ao seu ambiente.
-
-|           Variável            |                       Descrição           |          Exemplo      |
+|           Variável            |                Descrição                  |       Exemplo         |
 |-------------------------------|-------------------------------------------|-----------------------|
 | **PORTAINER**                 |                                           |                       |
 | `PORTAINER_PORT`              | Porta HTTPS do Portainer                  | `9443`                |
 | `PORTAINER_PORT2`             | Porta HTTP legada do Portainer            | `9000`                |
-| `PORTAINER_ADDRESS`           | IP fixo do container Portainer na rede    | `172.20.0.2`          |
+| `PORTAINER_ADDRESS`           | IP fixo do container                      | `172.20.0.2`          |
+|-------------------------------|-------------------------------------------|-----------------------|
 | **POSTGRESQL**                |                                           |                       |
 | `DATABASE`                    | Nome do banco de dados                    | `freeradius`          |
 | `POSTGRES_PORT`               | Porta exposta do Postgres                 | `5432`                |
-| `POSTGRES_ADDRESS`            | IP fixo do container Postgres             | `172.20.0.3`          |
+| `POSTGRES_ADDRESS`            | IP fixo do container                      | `172.20.0.3`          |
 | `POSTGRES_USER_DEFAULT`       | Usuário padrão do Postgres                | `postgres`            |
 | `POSTGRES_PASSWORD_DEFAULT`   | Senha do usuário padrão                   | `sua_senha`           |
+|-------------------------------|-------------------------------------------|-----------------------|
 | **FreeRADIUS**                |                                           |                       |
 | `FREERADIUS_ADDRESS`          | IP fixo do container FreeRADIUS           | `172.20.0.4`          |
 | `FREERADIUS_USER_DEFAULT`     | Usuário do banco para o FreeRADIUS        | `frd_user`            |
 | `FREERADIUS_PASSWORD_DEFAULT` | Senha do usuário FreeRADIUS               | `frd_senha`           |
+|-------------------------------|-------------------------------------------|-----------------------|
+| **ZABBIX SERVER**             |                                           |                       |
+| `ZABBIX_SERVER_ADDRESS`       | IP fixo do container                      | `172.20.0.5`          |
+| `ZABBIX_DATABASE`             | Database do Zabbix dentro do Postgre      | `zabbix`              |
+|-------------------------------|-------------------------------------------|-----------------------|
+| **ZABBIX WEB**                |                                           |                       |
+| `ZABBIX_WEB_ADDRESS`          | IP fixo do container                      | `172.20.0.6`          |
+| `ZABBIX_WEB_PORT`             | Porta de acesso do Zabbix                 | `8080`                |
+|-------------------------------|-------------------------------------------|-----------------------|
+| **ZABBIX AGENT**              |                                           |                       |
+| `ZABBIX_AGENT_ADDRESS`        | IP fixo do container                      | `172.20.0.7`          |
+| `ZBX_HOSTNAME`                | Nome do agent                             | `zabbix-agent`        |
+|-------------------------------|-------------------------------------------|-----------------------|
+| **GRAFANA**                   |                                           |                       |
+| `GRAFANA_ADDRESS`             | IP fixo do container                      | `172.20.0.8`          |
+|-------------------------------|-------------------------------------------|-----------------------|
 | **GLOBAL CONFIG**             |                                           |                       |
 | `TZ`                          | Fuso horário dos containers               | `America/Sao_Paulo`   |
 | `NETWORK_GATEWAY`             | Gateway da rede                           | `172.20.0.1`          |
 | `FREERADIUS_NETWORK`          | Sub-rede da network customizada           | `172.20.0.0/16`       |
+|-------------------------------|-------------------------------------------|-----------------------|
 
-> **Atenção:** se alterar `FREERADIUS_NETWORK` / `NETWORK_GATEWAY` (ex.: `192.168.0.0/24`),
-> atualize também todos os `*_ADDRESS` para IPs dentro da nova faixa.
-> O arquivo env-copy.txt possui todas as variáveis necessárias, preencha-o e renomeie para .env
+**ORIENTAÇÕES:**
 
-## Como subir
+## 1.
+> Case necessite alterar as variáveis `FREERADIUS_NETWORK` / `NETWORK_GATEWAY` (ex.: `192.168.0.0/24`),
+> lembre-se de alterar também todos os `*_ADDRESS` para IPs dentro da nova faixa.
 
-```bash
-# 1. Crie o arquivo .env com suas variáveis
-nano .env   # (env-copy.txt) 
+## 2.
+> Todos os containers necessitam de um IP fixo, caso não queria utilizar IP fixo, basta reajustar o projeto. Mas recomenda-se manter o banco de dados com IP fixo.
 
-# 2. Deploy 
+## 3.
+> O arquivo env-copy.txt possui todas as variáveis necessárias, preencha as variáveis e renomeio
+> o arquivo para .env antes de executar o deploy.
+
+# Como subir
+
+## 2. Deploy 
 docker compose up --build -d   
 
-# 3. Para remover (exceto images)
+## 3. Para remover network, containers e volumes 
 docker compose down -v
+
+## 4. Para remover apenas containers e network
+docker compose down
